@@ -5,6 +5,7 @@ interface UnauthorizedBannerProps {
   email: string;
   requiredRole: 'admin' | 'operator';
   actualRole?: string | null;
+  profileError?: string | null;
 }
 
 export function UnauthorizedBanner({
@@ -12,6 +13,7 @@ export function UnauthorizedBanner({
   email,
   requiredRole,
   actualRole,
+  profileError,
 }: UnauthorizedBannerProps) {
   const sqlSnippet = `insert into public.admin_profiles (id, email, role)\nvalues ('${userId}', '${email}', 'admin')\non conflict (id) do update set role = 'admin';`;
 
@@ -29,6 +31,11 @@ export function UnauthorizedBanner({
               ? `but your current role is "${actualRole}".`
               : 'but this user is not registered in public.admin_profiles yet.'}
           </p>
+          {profileError && (
+            <p className="text-xs font-mono text-red-300 bg-red-950/60 border border-red-800/60 rounded px-2.5 py-1.5">
+              Supabase query error: {profileError}
+            </p>
+          )}
         </div>
       </div>
 

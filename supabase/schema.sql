@@ -820,3 +820,11 @@ begin
   end if;
 end $$;
 
+-- -----------------------------------------------------------------------------
+-- 10. SCHEMA & TABLE GRANTS
+-- -----------------------------------------------------------------------------
+grant usage on schema public to anon, authenticated;
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select on public.game_sessions, public.session_questions, public.team_progress to anon;
+notify pgrst, 'reload schema';
+

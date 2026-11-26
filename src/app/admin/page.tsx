@@ -33,6 +33,7 @@ export default async function AdminOverviewPage() {
             email={auth.email}
             requiredRole="admin"
             actualRole={auth.profile?.role}
+            profileError={auth.profileError}
           />
         </div>
       </div>

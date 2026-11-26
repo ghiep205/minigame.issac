@@ -24,6 +24,7 @@ export default async function AdminSessionsPage() {
             email={auth.email}
             requiredRole="admin"
             actualRole={auth.profile?.role}
+            profileError={auth.profileError}
           />
         ) : (
           <SessionsManager />

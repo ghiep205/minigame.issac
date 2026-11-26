@@ -6,6 +6,7 @@ export interface AuthContext {
   userId: string;
   email: string;
   profile: AdminProfile | null;
+  profileError?: string | null;
 }
 
 export async function getAuthContext(): Promise<AuthContext | null> {
@@ -19,7 +20,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     return null;
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('admin_profiles')
     .select('*')
     .eq('id', user.id)
@@ -29,6 +30,7 @@ export async function getAuthContext(): Promise<AuthContext | null> {
     userId: user.id,
     email: user.email ?? '',
     profile: (profile as AdminProfile | null) ?? null,
+    profileError: profileError?.message ?? null,
   };
 }
 

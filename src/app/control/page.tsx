@@ -29,6 +29,7 @@ export default async function ControlPage({
             email={auth.email}
             requiredRole="operator"
             actualRole={auth.profile?.role}
+            profileError={auth.profileError}
           />
         </div>
       </div>
