@@ -314,14 +314,24 @@ export function QuestionsManager() {
     if (!window.confirm('Delete this question permanently?')) return;
     setFeedback(null);
     const supabase = createClient();
+
+    // First remove any session_questions references if admin has delete permission
+    await supabase.from('session_questions').delete().eq('question_id', q.id);
+
     const { error } = await supabase.from('questions').delete().eq('id', q.id);
 
     if (error) {
       setFeedback({
         type: 'error',
-        message: `Cannot delete question (it may be referenced by a game session): ${error.message}`,
+        message: `Cannot delete question: ${error.message}. Run supabase/migration_fix_delete_question.sql in Supabase SQL Editor or deactivate this question instead.`,
       });
     } else {
+      if (q.audio_url && q.audio_url.includes('/question-audio/')) {
+        const path = q.audio_url.split('/question-audio/')[1];
+        if (path) {
+          await supabase.storage.from('question-audio').remove([path]);
+        }
+      }
       setFeedback({ type: 'success', message: 'Question deleted.' });
       await Promise.all([loadQuestions(), loadCounts()]);
     }

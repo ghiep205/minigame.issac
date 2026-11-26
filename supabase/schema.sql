@@ -157,7 +157,7 @@ create policy "Admins can delete game sessions"
 create table if not exists public.session_questions (
   id uuid primary key default gen_random_uuid(),
   session_id uuid not null references public.game_sessions(id) on delete cascade,
-  question_id uuid not null references public.questions(id) on delete restrict,
+  question_id uuid not null references public.questions(id) on delete cascade,
   team text not null check (team in ('red', 'green', 'blue')),
   sequence_number integer not null check (sequence_number >= 1),
   status text not null default 'pending' check (status in ('pending', 'active', 'answered_correctly', 'skipped', 'expired')),
@@ -182,6 +182,11 @@ create policy "Operators can update session questions"
   to authenticated
   using (public.is_operator())
   with check (public.is_operator());
+
+create policy "Admins can delete session questions"
+  on public.session_questions for delete
+  to authenticated
+  using (public.is_admin());
 
 -- -----------------------------------------------------------------------------
 -- 5. TEAM PROGRESS TABLE
