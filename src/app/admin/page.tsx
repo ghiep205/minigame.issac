@@ -73,11 +73,11 @@ export default async function AdminOverviewPage() {
   const recentSessions = (recentSessionsRes.data ?? []) as GameSession[];
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB] text-slate-900">
+    <div className="min-h-dvh bg-[#F4F7FB] text-slate-900">
       <AdminNav email={auth.email} role={auth.profile.role} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        <div className="rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-6 sm:p-8 space-y-6">
+      <main className="max-w-7xl mx-auto px-0 sm:px-6 py-0 sm:py-8">
+        <div className="rounded-none sm:rounded-3xl bg-white border-x-0 sm:border border-slate-200/80 shadow-none sm:shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-4 sm:p-8 space-y-6">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 pb-6">
             <div className="flex items-start gap-3.5">

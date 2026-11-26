@@ -141,7 +141,7 @@ export function SessionsManager() {
   }
 
   return (
-    <div className="rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-6 sm:p-8 space-y-8">
+    <div className="rounded-none sm:rounded-3xl bg-white border-x-0 sm:border border-slate-200/80 shadow-none sm:shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-4 sm:p-8 space-y-6 sm:space-y-8">
       <div className="flex items-start gap-3.5 border-b border-slate-100 pb-6">
         <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
           <PlaySquare className="w-5 h-5" />

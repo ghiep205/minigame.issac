@@ -388,7 +388,7 @@ export function QuestionsManager() {
   const shortTeams = TEAMS.filter((t) => teamCounts[t].active < 15);
 
   return (
-    <div className="rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-6 sm:p-8 space-y-6">
+    <div className="rounded-none sm:rounded-3xl bg-white border-x-0 sm:border border-slate-200/80 shadow-none sm:shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-4 sm:p-8 space-y-5 sm:space-y-6">
       {/* Header matching reference card */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
         <div className="flex items-start gap-3.5">

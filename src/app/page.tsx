@@ -3,8 +3,8 @@ import { Monitor, Sliders, ShieldCheck, ArrowRight, Sparkles } from 'lucide-reac
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[#F4F7FB] text-slate-900 flex flex-col items-center justify-center p-6">
-      <div className="max-w-5xl w-full rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 sm:p-10 space-y-8">
+    <main className="min-h-dvh bg-[#F4F7FB] text-slate-900 flex flex-col items-center justify-center p-0 sm:p-6">
+      <div className="max-w-5xl w-full min-h-dvh sm:min-h-0 rounded-none sm:rounded-3xl bg-white border-0 sm:border sm:border-slate-200/80 shadow-none sm:shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-5 sm:p-10 space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-6">
           <div className="flex items-start gap-4">

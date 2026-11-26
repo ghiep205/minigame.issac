@@ -15,9 +15,9 @@ export default async function AdminSessionsPage() {
   const auth = await requireAdmin('/admin/sessions');
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-slate-100">
+    <div className="min-h-dvh bg-[#F4F7FB] text-slate-900">
       <AdminNav email={auth.email} role={auth.profile?.role} />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-7xl mx-auto px-0 sm:px-6 py-0 sm:py-8">
         {auth.profile?.role !== 'admin' ? (
           <UnauthorizedBanner
             userId={auth.userId}

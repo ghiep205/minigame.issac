@@ -319,17 +319,17 @@ export function MCControlPanel({
   );
 
   return (
-    <div className="min-h-screen bg-[#F4F7FB] text-slate-900">
+    <div className="min-h-dvh bg-[#F4F7FB] text-slate-900">
       <header className="border-b border-slate-200/80 bg-white/95 sticky top-0 z-30 backdrop-blur">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <span className="font-bold text-slate-900 text-lg">
-              MC Control Panel
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-wrap items-center justify-between gap-2.5 sm:gap-4">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
+            <span className="font-bold text-slate-900 text-base sm:text-lg">
+              MC Control
             </span>
             <select
               value={selectedSessionId}
               onChange={(e) => setSelectedSessionId(e.target.value)}
-              className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-1.5 text-sm text-slate-800 max-w-xs focus:outline-none focus:bg-white focus:border-sky-400"
+              className="rounded-xl bg-slate-50 border border-slate-200 px-3 py-1.5 text-sm text-slate-800 flex-1 sm:flex-initial sm:max-w-xs focus:outline-none focus:bg-white focus:border-sky-400"
             >
               {sessions.length === 0 && <option value="">No sessions</option>}
               {sessions.map((s) => (
@@ -365,7 +365,7 @@ export function MCControlPanel({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-2.5 sm:px-6 py-3.5 sm:py-6 space-y-4 sm:space-y-6">
         {feedback && (
           <div
             className={`rounded-2xl p-3.5 flex items-center gap-2.5 text-sm border ${
