@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertTriangle,
+  PlaySquare,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { TEAM_CONFIG, TEAMS, type GameSession, type Team } from '@/types/quiz';
@@ -26,7 +27,6 @@ export function SessionsManager() {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  // New session form
   const [sessionName, setSessionName] = useState('');
   const [gameMode, setGameMode] = useState<'standard' | 'test'>('standard');
   const [questionsPerTeam, setQuestionsPerTeam] = useState(15);
@@ -74,11 +74,7 @@ export function SessionsManager() {
 
   function handleModeChange(mode: 'standard' | 'test') {
     setGameMode(mode);
-    if (mode === 'standard') {
-      setQuestionsPerTeam(15);
-    } else {
-      setQuestionsPerTeam(5);
-    }
+    setQuestionsPerTeam(mode === 'standard' ? 15 : 5);
   }
 
   const insufficientTeams = TEAMS.filter(
@@ -145,47 +141,59 @@ export function SessionsManager() {
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-bold text-white">Game Sessions</h1>
-        <p className="text-sm text-slate-400">
-          Initialize new quiz sessions with randomized, non-repeating question
-          pools stored in Supabase.
-        </p>
+    <div className="rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.04)] p-6 sm:p-8 space-y-8">
+      <div className="flex items-start gap-3.5 border-b border-slate-100 pb-6">
+        <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-100 flex items-center justify-center text-sky-600 shrink-0">
+          <PlaySquare className="w-5 h-5" />
+        </div>
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+            Game Sessions
+          </h1>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Initialize new quiz sessions with randomized, non-repeating question
+            pools stored in Supabase.
+          </p>
+        </div>
       </div>
 
       {feedback && (
         <div
-          className={`rounded-xl p-3.5 flex items-center gap-2.5 text-sm border ${
+          className={`rounded-2xl p-3.5 flex items-center gap-2.5 text-sm border ${
             feedback.type === 'success'
-              ? 'bg-emerald-950/40 border-emerald-700/60 text-emerald-100'
-              : 'bg-red-950/50 border-red-700/60 text-red-100'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+              : 'bg-red-50 border-red-200 text-red-900'
           }`}
         >
           {feedback.type === 'success' ? (
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           ) : (
-            <XCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <XCircle className="w-4 h-4 text-red-500 shrink-0" />
           )}
           <span>{feedback.message}</span>
         </div>
       )}
 
-      {/* Setup Form */}
+      {/* Setup Card */}
       <form
         onSubmit={handleCreateSession}
-        className="rounded-xl bg-slate-900 border border-slate-800 p-6 space-y-5"
+        className="rounded-2xl bg-[#EBF6FF] border border-sky-200/70 p-6 space-y-5"
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">
-            Create New Session
-          </h2>
-          <span className="text-xs text-slate-400">
-            Total questions: {questionsPerTeam * 3}
+          <div>
+            <h2 className="text-base font-bold text-slate-900">
+              Create New Session
+            </h2>
+            <p className="text-xs text-slate-500">
+              Total questions in session: {questionsPerTeam * 3}
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-white border border-sky-200/70 text-xs font-semibold text-sky-700">
+            {questionsPerTeam} / team
           </span>
         </div>
 
-        {/* Question readiness preview */}
+        {/* Team Readiness */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {TEAMS.map((t) => {
             const cfg = TEAM_CONFIG[t];
@@ -193,9 +201,9 @@ export function SessionsManager() {
             return (
               <div
                 key={t}
-                className="rounded-lg bg-slate-950 border border-slate-800 px-4 py-3 flex items-center justify-between"
+                className="rounded-xl bg-white border border-sky-100 px-4 py-3 flex items-center justify-between shadow-2xs"
               >
-                <span className="inline-flex items-center gap-2 text-sm font-medium text-white">
+                <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-800">
                   <span
                     className="w-2.5 h-2.5 rounded-full"
                     style={{ backgroundColor: cfg.hex }}
@@ -203,8 +211,8 @@ export function SessionsManager() {
                   {cfg.label}
                 </span>
                 <span
-                  className={`text-xs font-medium ${
-                    ok ? 'text-emerald-400' : 'text-amber-400'
+                  className={`text-xs font-semibold ${
+                    ok ? 'text-emerald-600' : 'text-amber-600'
                   }`}
                 >
                   {activeCounts[t]} / {questionsPerTeam} active
@@ -215,11 +223,11 @@ export function SessionsManager() {
         </div>
 
         {insufficientTeams.length > 0 && (
-          <div className="rounded-lg bg-amber-950/40 border border-amber-700/60 p-3 flex items-center gap-2.5 text-xs text-amber-200">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 flex items-center gap-2.5 text-xs text-amber-900">
+            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
             <span>
               Add more active questions in{' '}
-              <Link href="/admin/questions" className="underline font-medium">
+              <Link href="/admin/questions" className="underline font-semibold">
                 Questions
               </Link>{' '}
               or switch to Test Mode (5 per team).
@@ -229,7 +237,7 @@ export function SessionsManager() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2 space-y-1.5">
-            <label className="block text-sm font-medium text-slate-300">
+            <label className="block text-sm font-medium text-slate-700">
               Session Name *
             </label>
             <input
@@ -237,13 +245,13 @@ export function SessionsManager() {
               required
               value={sessionName}
               onChange={(e) => setSessionName(e.target.value)}
-              placeholder="e.g. Company Townhall Finals 2026"
-              className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500"
+              placeholder="e.g. ISSAC Live Quiz Finals 2026"
+              className="w-full rounded-xl bg-white border border-sky-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-300">
+            <label className="block text-sm font-medium text-slate-700">
               Game Mode
             </label>
             <select
@@ -251,7 +259,7 @@ export function SessionsManager() {
               onChange={(e) =>
                 handleModeChange(e.target.value as 'standard' | 'test')
               }
-              className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="w-full rounded-xl bg-white border border-sky-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-sky-500"
             >
               <option value="standard">Standard (15 / team = 45)</option>
               <option value="test">Test Mode (5 / team = 15)</option>
@@ -259,7 +267,7 @@ export function SessionsManager() {
           </div>
 
           <div className="space-y-1.5">
-            <label className="block text-sm font-medium text-slate-300">
+            <label className="block text-sm font-medium text-slate-700">
               Timer (seconds)
             </label>
             <input
@@ -270,18 +278,18 @@ export function SessionsManager() {
               onChange={(e) =>
                 setTimerDuration(Math.max(5, Number(e.target.value) || 25))
               }
-              className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
+              className="w-full rounded-xl bg-white border border-sky-200 px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-sky-500"
             />
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
-          <label className="inline-flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+          <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
             <input
               type="checkbox"
               checked={autoStart}
               onChange={(e) => setAutoStart(e.target.checked)}
-              className="rounded border-slate-700 bg-slate-950"
+              className="rounded border-slate-300 text-sky-600"
             />
             Start session immediately (load Question 1 for Team Red)
           </label>
@@ -289,7 +297,7 @@ export function SessionsManager() {
           <button
             type="submit"
             disabled={creating || insufficientTeams.length > 0}
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-sm font-medium text-white transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-sm font-semibold text-white transition-colors shadow-xs cursor-pointer"
           >
             {creating ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -302,50 +310,53 @@ export function SessionsManager() {
       </form>
 
       {/* Sessions List */}
-      <div className="rounded-xl bg-slate-900 border border-slate-800 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-800">
-          <h2 className="font-semibold text-white">All Sessions</h2>
-        </div>
+      <div className="space-y-3">
+        <h2 className="text-base font-bold text-slate-900">All Sessions</h2>
 
         {loading ? (
-          <div className="p-10 flex items-center justify-center gap-2 text-sm text-slate-400">
-            <Loader2 className="w-4 h-4 animate-spin" />
+          <div className="rounded-2xl border border-slate-200/80 p-10 flex items-center justify-center gap-2 text-sm text-slate-500">
+            <Loader2 className="w-4 h-4 animate-spin text-sky-500" />
             Loading sessions...
           </div>
         ) : sessions.length === 0 ? (
-          <div className="p-10 text-center text-sm text-slate-400">
+          <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-10 text-center text-sm text-slate-500">
             No sessions created yet.
           </div>
         ) : (
-          <div className="divide-y divide-slate-800">
-            {sessions.map((s) => (
+          <div className="space-y-2.5">
+            {sessions.map((s, idx) => (
               <div
                 key={s.id}
-                className="px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="rounded-2xl bg-white border border-slate-200/90 hover:border-sky-200 px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors"
               >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-semibold text-white">
-                      {s.session_name}
-                    </span>
-                    <span className="text-xs uppercase tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300">
-                      {s.status}
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      ({s.game_mode})
-                    </span>
+                <div className="flex items-start gap-3.5">
+                  <span className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold text-slate-900">
+                        {s.session_name}
+                      </span>
+                      <span className="text-xs uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">
+                        {s.status}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        ({s.game_mode})
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Progress: {s.current_question_number} /{' '}
+                      {s.questions_per_team * 3} · Timer: {s.timer_duration}s ·
+                      Created {new Date(s.created_at).toLocaleString()}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    Progress: {s.current_question_number} /{' '}
-                    {s.questions_per_team * 3} · Timer: {s.timer_duration}s ·
-                    Created {new Date(s.created_at).toLocaleString()}
-                  </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 self-end md:self-center">
                   <Link
                     href={`/control?sessionId=${s.id}`}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-medium text-white"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-xs font-semibold text-white"
                   >
                     {s.status === 'pending' ? (
                       <Play className="w-3.5 h-3.5" />
@@ -357,15 +368,15 @@ export function SessionsManager() {
                   <Link
                     href={`/game?sessionId=${s.id}`}
                     target="_blank"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700"
                   >
-                    <Monitor className="w-3.5 h-3.5" />
+                    <Monitor className="w-3.5 h-3.5 text-sky-600" />
                     Projector
                   </Link>
                   <button
                     onClick={() => handleDeleteSession(s.id, s.session_name)}
                     title="Delete session"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800 cursor-pointer"
+                    className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

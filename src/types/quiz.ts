@@ -106,8 +106,8 @@ export const TEAM_CONFIG: Record<
     bgClass: 'bg-[#EF4444]',
     borderClass: 'border-[#EF4444]',
     textClass: 'text-[#EF4444]',
-    softBgClass: 'bg-[#EF4444]/15',
-    badgeClass: 'bg-[#EF4444]/20 text-[#FCA5A5] border border-[#EF4444]/40',
+    softBgClass: 'bg-red-50',
+    badgeClass: 'bg-red-50 text-red-600 border border-red-200',
     ringClass: 'ring-[#EF4444]',
   },
   green: {
@@ -117,8 +117,8 @@ export const TEAM_CONFIG: Record<
     bgClass: 'bg-[#16A34A]',
     borderClass: 'border-[#16A34A]',
     textClass: 'text-[#16A34A]',
-    softBgClass: 'bg-[#16A34A]/15',
-    badgeClass: 'bg-[#16A34A]/20 text-[#86EFAC] border border-[#16A34A]/40',
+    softBgClass: 'bg-green-50',
+    badgeClass: 'bg-green-50 text-green-700 border border-green-200',
     ringClass: 'ring-[#16A34A]',
   },
   blue: {
@@ -128,8 +128,8 @@ export const TEAM_CONFIG: Record<
     bgClass: 'bg-[#2563EB]',
     borderClass: 'border-[#2563EB]',
     textClass: 'text-[#2563EB]',
-    softBgClass: 'bg-[#2563EB]/15',
-    badgeClass: 'bg-[#2563EB]/20 text-[#93C5FD] border border-[#2563EB]/40',
+    softBgClass: 'bg-blue-50',
+    badgeClass: 'bg-blue-50 text-blue-600 border border-blue-200',
     ringClass: 'ring-[#2563EB]',
   },
 };

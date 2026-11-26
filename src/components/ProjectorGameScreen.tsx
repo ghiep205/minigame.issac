@@ -130,7 +130,7 @@ export function ProjectorGameScreen({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-slate-300 flex items-center justify-center text-xl">
+      <div className="min-h-screen bg-[#F4F7FB] text-slate-500 flex items-center justify-center text-xl font-medium">
         Connecting to live game...
       </div>
     );
@@ -138,10 +138,10 @@ export function ProjectorGameScreen({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0B1120] text-red-300 flex items-center justify-center p-8 text-center">
-        <div className="max-w-lg space-y-2">
-          <p className="text-xl font-semibold">Connection Error</p>
-          <p className="text-sm text-red-200/80">{error}</p>
+      <div className="min-h-screen bg-[#F4F7FB] text-red-700 flex items-center justify-center p-8 text-center">
+        <div className="max-w-lg rounded-2xl bg-white border border-red-200 p-6 space-y-2 shadow-sm">
+          <p className="text-xl font-bold">Connection Error</p>
+          <p className="text-sm text-red-600">{error}</p>
         </div>
       </div>
     );
@@ -156,9 +156,9 @@ export function ProjectorGameScreen({
     : 0;
 
   return (
-    <div className="min-h-screen w-full bg-[#0B1120] text-slate-100 flex flex-col justify-between p-5 lg:p-8 select-none">
+    <div className="min-h-screen w-full bg-[#F4F7FB] text-slate-900 flex flex-col justify-between p-5 lg:p-8 select-none">
       {/* TOP BAR */}
-      <header className="flex items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <header className="rounded-2xl bg-white border border-slate-200/80 shadow-2xs px-6 py-4 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#EF4444]" />
@@ -166,34 +166,34 @@ export function ProjectorGameScreen({
             <span className="w-3 h-3 rounded-full bg-[#2563EB]" />
           </div>
           <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-slate-400 font-semibold">
+            <p className="text-xs uppercase tracking-[0.18em] text-sky-600 font-bold">
               Live Team Quiz
             </p>
-            <h1 className="text-xl lg:text-2xl font-bold text-white">
+            <h1 className="text-xl lg:text-2xl font-bold text-slate-900">
               {session ? session.session_name : 'Waiting for Session'}
             </h1>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3.5">
           {session && (
             <>
-              <div className="px-4 py-2 rounded-lg bg-slate-900 border border-slate-800 text-right">
-                <p className="text-[11px] uppercase tracking-wider text-slate-400">
+              <div className="px-4 py-1.5 rounded-xl bg-[#EBF6FF] border border-sky-200/70 text-right">
+                <p className="text-[11px] uppercase tracking-wider text-sky-700 font-semibold">
                   Progress
                 </p>
-                <p className="text-lg lg:text-xl font-bold text-white tabular-nums">
+                <p className="text-base lg:text-xl font-bold text-slate-900 tabular-nums">
                   QUESTION {session.current_question_number} / {totalQuestions}
                 </p>
               </div>
 
               <div
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs lg:text-sm font-bold uppercase tracking-wider border ${
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs lg:text-sm font-bold uppercase tracking-wider border ${
                   session.status === 'playing'
-                    ? 'bg-emerald-950/60 border-emerald-600/60 text-emerald-300'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
                     : session.status === 'paused'
-                    ? 'bg-amber-950/60 border-amber-600/60 text-amber-300'
-                    : 'bg-slate-900 border-slate-700 text-slate-300'
+                    ? 'bg-amber-50 border-amber-200 text-amber-700'
+                    : 'bg-slate-100 border-slate-200 text-slate-600'
                 }`}
               >
                 <Radio className="w-4 h-4" />
@@ -205,7 +205,7 @@ export function ProjectorGameScreen({
           <button
             onClick={toggleFullscreen}
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-            className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-600 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
           >
             {isFullscreen ? (
               <Minimize2 className="w-5 h-5" />
@@ -219,38 +219,38 @@ export function ProjectorGameScreen({
       {/* MAIN SECTION */}
       <main className="flex-1 flex flex-col items-center justify-center py-6 lg:py-8">
         {!session || session.status === 'pending' ? (
-          <div className="text-center space-y-5 max-w-2xl">
-            <div className="flex items-center justify-center gap-4">
+          <div className="rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-10 lg:p-14 text-center space-y-6 max-w-3xl w-full">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               {TEAMS.map((t) => (
                 <span
                   key={t}
-                  className="px-5 py-2 rounded-lg font-bold text-white text-lg"
+                  className="px-5 py-2 rounded-xl font-bold text-white text-lg"
                   style={{ backgroundColor: TEAM_CONFIG[t].hex }}
                 >
                   {TEAM_CONFIG[t].label}
                 </span>
               ))}
             </div>
-            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+            <h2 className="text-4xl lg:text-5xl font-bold text-slate-900">
               {session ? session.session_name : 'Ready for Live Quiz'}
             </h2>
-            <p className="text-xl text-slate-400">
+            <p className="text-lg lg:text-xl text-slate-500">
               {session
                 ? 'Session is ready. Waiting for the MC to start the first question.'
                 : 'No active quiz session right now. Waiting for host...'}
             </p>
           </div>
         ) : session.status === 'completed' ? (
-          <div className="w-full max-w-5xl space-y-8 text-center">
+          <div className="w-full max-w-5xl rounded-3xl bg-white border border-slate-200/80 shadow-[0_4px_24px_rgba(15,23,42,0.05)] p-8 lg:p-12 space-y-8 text-center">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-800 text-slate-200 text-sm font-semibold uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#EBF6FF] border border-sky-200 text-sky-700 text-sm font-bold uppercase tracking-wider">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 Session Complete
               </div>
-              <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              <h2 className="text-4xl lg:text-5xl font-bold text-slate-900">
                 Final Team Summary
               </h2>
-              <p className="text-slate-400 text-lg">
+              <p className="text-slate-500 text-lg">
                 {session.session_name} · {totalQuestions} Questions
               </p>
             </div>
@@ -262,33 +262,33 @@ export function ProjectorGameScreen({
                 return (
                   <div
                     key={t}
-                    className="rounded-2xl bg-slate-900 border-2 p-7 space-y-5"
+                    className="rounded-2xl bg-[#F8FAFC] border-2 p-7 space-y-5"
                     style={{ borderColor: cfg.hex }}
                   >
                     <div
-                      className="inline-block px-4 py-1.5 rounded-lg text-white font-bold text-xl"
+                      className="inline-block px-4 py-1.5 rounded-xl text-white font-bold text-xl"
                       style={{ backgroundColor: cfg.hex }}
                     >
                       {cfg.label}
                     </div>
                     <div className="space-y-1">
-                      <p className="text-sm uppercase tracking-wider text-slate-400">
+                      <p className="text-sm font-semibold uppercase tracking-wider text-slate-400">
                         Correct Answers
                       </p>
-                      <p className="text-6xl font-bold text-white tabular-nums">
+                      <p className="text-6xl font-bold text-slate-900 tabular-nums">
                         {tp?.correct_count ?? 0}
                       </p>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800 text-sm">
+                    <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-200 text-sm">
                       <div>
                         <p className="text-slate-400">Completed</p>
-                        <p className="text-xl font-bold text-white">
+                        <p className="text-xl font-bold text-slate-900">
                           {tp?.completed_count ?? 0}/{tp?.question_count ?? 15}
                         </p>
                       </div>
                       <div>
                         <p className="text-slate-400">Skipped</p>
-                        <p className="text-xl font-bold text-slate-300">
+                        <p className="text-xl font-bold text-slate-600">
                           {tp?.skipped_count ?? 0}
                         </p>
                       </div>
@@ -299,12 +299,12 @@ export function ProjectorGameScreen({
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-6xl space-y-6">
+          <div className="w-full max-w-6xl space-y-5">
             {/* Team Turn + Timer Row */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               {activeTeamCfg && (
                 <div
-                  className="px-6 py-3 rounded-xl text-white font-bold text-2xl lg:text-3xl tracking-wide flex items-center gap-3"
+                  className="px-6 py-3 rounded-2xl text-white font-bold text-2xl lg:text-3xl tracking-wide flex items-center gap-3 shadow-xs"
                   style={{ backgroundColor: activeTeamCfg.hex }}
                 >
                   <span className="w-3.5 h-3.5 rounded-full bg-white" />
@@ -314,17 +314,17 @@ export function ProjectorGameScreen({
 
               {/* Countdown Timer */}
               <div
-                className={`px-7 py-3 rounded-xl border-2 flex items-center gap-4 transition-colors ${
+                className={`px-7 py-3 rounded-2xl border-2 flex items-center gap-4 shadow-2xs transition-colors ${
                   isTimeUp
-                    ? 'bg-[#EF4444]/20 border-[#EF4444] text-white'
+                    ? 'bg-red-50 border-[#EF4444] text-[#EF4444]'
                     : isWarning
-                    ? 'bg-amber-500/20 border-amber-500 text-amber-200'
-                    : 'bg-slate-900 border-slate-700 text-white'
+                    ? 'bg-amber-50 border-amber-500 text-amber-700'
+                    : 'bg-white border-slate-200 text-slate-900'
                 }`}
               >
                 <Clock className="w-8 h-8 shrink-0" />
                 {isTimeUp ? (
-                  <span className="text-3xl lg:text-4xl font-extrabold tracking-wider text-[#FCA5A5]">
+                  <span className="text-3xl lg:text-4xl font-extrabold tracking-wider">
                     TIME&apos;S UP
                   </span>
                 ) : (
@@ -336,7 +336,7 @@ export function ProjectorGameScreen({
             </div>
 
             {/* Timer Progress Bar */}
-            <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
+            <div className="w-full h-3 rounded-full bg-white border border-slate-200 overflow-hidden">
               <div
                 className="h-full transition-all duration-150"
                 style={{
@@ -345,19 +345,19 @@ export function ProjectorGameScreen({
                     ? '#EF4444'
                     : isWarning
                     ? '#F59E0B'
-                    : activeTeamCfg?.hex ?? '#2563EB',
+                    : activeTeamCfg?.hex ?? '#0EA5E9',
                 }}
               />
             </div>
 
             {/* Large Question Card */}
             <div
-              className="rounded-2xl bg-slate-900 border-2 p-8 lg:p-14 min-h-[240px] lg:min-h-[300px] flex items-center justify-center text-center shadow-2xl"
+              className="rounded-3xl bg-white border-2 p-8 lg:p-14 min-h-[250px] lg:min-h-[320px] flex items-center justify-center text-center shadow-[0_6px_30px_rgba(15,23,42,0.06)]"
               style={{
-                borderColor: activeTeamCfg?.hex ?? '#334155',
+                borderColor: activeTeamCfg?.hex ?? '#CBD5E1',
               }}
             >
-              <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight tracking-tight">
+              <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
                 {gameState?.current_question?.question_text ??
                   'Loading question...'}
               </p>
@@ -367,7 +367,7 @@ export function ProjectorGameScreen({
       </main>
 
       {/* BOTTOM SECTION: TEAM PROGRESS */}
-      <footer className="grid grid-cols-3 gap-4 lg:gap-6 pt-4 border-t border-slate-800">
+      <footer className="grid grid-cols-3 gap-4 lg:gap-6">
         {TEAMS.map((t) => {
           const cfg = TEAM_CONFIG[t];
           const tp = progressByTeam[t];
@@ -379,8 +379,8 @@ export function ProjectorGameScreen({
           return (
             <div
               key={t}
-              className={`rounded-xl p-4 lg:p-5 border-2 transition-colors ${
-                isActive ? 'bg-slate-900' : 'bg-slate-900/60 border-slate-800'
+              className={`rounded-2xl p-4 lg:p-5 border-2 bg-white shadow-2xs transition-colors ${
+                isActive ? '' : 'border-slate-200/80'
               }`}
               style={isActive ? { borderColor: cfg.hex } : undefined}
             >
@@ -390,13 +390,13 @@ export function ProjectorGameScreen({
                     className="w-3.5 h-3.5 rounded-full"
                     style={{ backgroundColor: cfg.hex }}
                   />
-                  <span className="text-base lg:text-xl font-bold text-white">
+                  <span className="text-base lg:text-xl font-bold text-slate-900">
                     {cfg.label}
                   </span>
                 </div>
                 {isActive && (
                   <span
-                    className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded text-white"
+                    className="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full text-white"
                     style={{ backgroundColor: cfg.hex }}
                   >
                     Active
@@ -405,27 +405,27 @@ export function ProjectorGameScreen({
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-slate-950/80 py-2 px-1">
-                  <p className="text-[11px] uppercase tracking-wider text-slate-400">
+                <div className="rounded-xl bg-slate-50 border border-slate-100 py-2 px-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     Done
                   </p>
-                  <p className="text-lg lg:text-2xl font-bold text-white tabular-nums">
+                  <p className="text-lg lg:text-2xl font-bold text-slate-900 tabular-nums">
                     {tp?.completed_count ?? 0}/{tp?.question_count ?? 15}
                   </p>
                 </div>
-                <div className="rounded-lg bg-slate-950/80 py-2 px-1">
-                  <p className="text-[11px] uppercase tracking-wider text-slate-400">
+                <div className="rounded-xl bg-slate-50 border border-slate-100 py-2 px-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     Correct
                   </p>
-                  <p className="text-lg lg:text-2xl font-bold text-emerald-400 tabular-nums">
+                  <p className="text-lg lg:text-2xl font-bold text-[#16A34A] tabular-nums">
                     {tp?.correct_count ?? 0}
                   </p>
                 </div>
-                <div className="rounded-lg bg-slate-950/80 py-2 px-1">
-                  <p className="text-[11px] uppercase tracking-wider text-slate-400">
+                <div className="rounded-xl bg-slate-50 border border-slate-100 py-2 px-1">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                     Skipped
                   </p>
-                  <p className="text-lg lg:text-2xl font-bold text-slate-300 tabular-nums">
+                  <p className="text-lg lg:text-2xl font-bold text-slate-500 tabular-nums">
                     {tp?.skipped_count ?? 0}
                   </p>
                 </div>
