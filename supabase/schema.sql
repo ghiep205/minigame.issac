@@ -120,6 +120,9 @@ create table if not exists public.game_sessions (
   paused_remaining_seconds numeric(8, 2) null,
   audio_playing boolean not null default false,
   audio_started_at timestamptz null,
+  last_result text null check (last_result in ('correct', 'incorrect', 'skipped', 'timeout')),
+  last_result_team text null check (last_result_team in ('red', 'green', 'blue')),
+  last_result_at timestamptz null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -506,7 +509,10 @@ begin
     current_started_at = null,
     paused_remaining_seconds = v_session.timer_duration,
     audio_playing = false,
-    audio_started_at = null
+    audio_started_at = null,
+    last_result = null,
+    last_result_team = null,
+    last_result_at = null
   where id = p_session_id;
 
   return jsonb_build_object('started', true, 'session_id', p_session_id);
@@ -704,7 +710,10 @@ begin
       current_started_at = null,
       paused_remaining_seconds = v_session.timer_duration,
       audio_playing = false,
-      audio_started_at = null
+      audio_started_at = null,
+      last_result = p_outcome,
+      last_result_team = v_session.current_team,
+      last_result_at = now()
     where id = p_session_id;
 
     return jsonb_build_object(
@@ -723,7 +732,10 @@ begin
       current_started_at = null,
       paused_remaining_seconds = 0,
       audio_playing = false,
-      audio_started_at = null
+      audio_started_at = null,
+      last_result = p_outcome,
+      last_result_team = v_session.current_team,
+      last_result_at = now()
     where id = p_session_id;
 
     return jsonb_build_object(
@@ -777,7 +789,10 @@ begin
     current_started_at = null,
     paused_remaining_seconds = v_session.timer_duration,
     audio_playing = false,
-    audio_started_at = null
+    audio_started_at = null,
+    last_result = null,
+    last_result_team = null,
+    last_result_at = null
   where id = p_session_id;
 
   return jsonb_build_object('restarted', true);

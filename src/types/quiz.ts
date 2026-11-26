@@ -42,6 +42,9 @@ export interface GameSession {
   paused_remaining_seconds: number | null;
   audio_playing: boolean;
   audio_started_at: string | null;
+  last_result: QuestionOutcome | null;
+  last_result_team: Team | null;
+  last_result_at: string | null;
   created_at: string;
   updated_at: string;
 }

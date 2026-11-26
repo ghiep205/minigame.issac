@@ -7,6 +7,8 @@ import {
   Radio,
   Clock,
   CheckCircle2,
+  XCircle,
+  SkipForward,
   Play,
   Square,
   Volume2,
@@ -17,6 +19,9 @@ import {
   TEAM_CONFIG,
   TEAMS,
   type PublicGameState,
+  type QuestionOutcome,
+  type Team,
+  type TeamProgress,
 } from '@/types/quiz';
 
 interface ProjectorGameScreenProps {
@@ -33,8 +38,29 @@ export function ProjectorGameScreen({
   const [error, setError] = useState<string | null>(null);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
   const [localPlaying, setLocalPlaying] = useState(false);
+  const [resultAnnouncement, setResultAnnouncement] = useState<{
+    team: Team;
+    outcome: QuestionOutcome;
+    id: string;
+  } | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const prevProgressRef = useRef<Record<string, TeamProgress>>({});
+  const lastSeenResultAtRef = useRef<string | null>(null);
+  const bannerTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerBanner = useCallback(
+    (team: Team, outcome: QuestionOutcome, id: string) => {
+      if (bannerTimeoutRef.current) {
+        clearTimeout(bannerTimeoutRef.current);
+      }
+      setResultAnnouncement({ team, outcome, id });
+      bannerTimeoutRef.current = setTimeout(() => {
+        setResultAnnouncement(null);
+      }, 3500);
+    },
+    []
+  );
 
   const fetchGameState = useCallback(async () => {
     try {
@@ -61,6 +87,54 @@ export function ProjectorGameScreen({
         setServerOffsetMs(serverMs - rttMid);
       }
 
+      // Detect newly submitted result via session.last_result_at or team_progress delta
+      const nextProgressMap: Record<string, TeamProgress> = {};
+      for (const tp of payload?.team_progress ?? []) {
+        nextProgressMap[tp.team] = tp;
+      }
+
+      const incomingResultAt = payload?.session?.last_result_at ?? null;
+      const incomingResult = payload?.session?.last_result ?? null;
+      const incomingResultTeam = payload?.session?.last_result_team ?? null;
+
+      if (
+        incomingResultAt &&
+        incomingResult &&
+        incomingResultTeam &&
+        lastSeenResultAtRef.current !== incomingResultAt
+      ) {
+        const ageMs = payload.server_time
+          ? Date.parse(payload.server_time) - Date.parse(incomingResultAt)
+          : 0;
+        const isFirstLoad = Object.keys(prevProgressRef.current).length === 0;
+        lastSeenResultAtRef.current = incomingResultAt;
+        if (!isFirstLoad || ageMs < 4000) {
+          triggerBanner(incomingResultTeam, incomingResult, incomingResultAt);
+        }
+      } else if (Object.keys(prevProgressRef.current).length > 0) {
+        for (const tp of payload?.team_progress ?? []) {
+          const prev = prevProgressRef.current[tp.team];
+          if (!prev || prev.session_id !== tp.session_id) continue;
+          if (tp.correct_count > prev.correct_count) {
+            triggerBanner(
+              tp.team,
+              'correct',
+              `${tp.team}-correct-${tp.correct_count}`
+            );
+            break;
+          }
+          if (tp.skipped_count > prev.skipped_count) {
+            triggerBanner(
+              tp.team,
+              'incorrect',
+              `${tp.team}-skipped-${tp.skipped_count}`
+            );
+            break;
+          }
+        }
+      }
+
+      prevProgressRef.current = nextProgressMap;
       setGameState(payload);
       setError(null);
       setLoading(false);
@@ -68,7 +142,7 @@ export function ProjectorGameScreen({
       setError(err instanceof Error ? err.message : 'Unable to load game state.');
       setLoading(false);
     }
-  }, [initialSessionId]);
+  }, [initialSessionId, triggerBanner]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -300,6 +374,41 @@ export function ProjectorGameScreen({
         onEnded={() => setLocalPlaying(false)}
         className="hidden"
       />
+
+      {/* LIVE RESULT BANNER FOR ALL TEAMS */}
+      {resultAnnouncement && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-40 w-[92%] max-w-2xl pointer-events-none">
+          <div
+            className={`rounded-2xl px-6 py-4 shadow-xl border-2 flex items-center justify-center gap-3 text-white ${
+              resultAnnouncement.outcome === 'correct'
+                ? 'bg-[#16A34A] border-emerald-300'
+                : resultAnnouncement.outcome === 'incorrect'
+                ? 'bg-[#EF4444] border-red-300'
+                : resultAnnouncement.outcome === 'timeout'
+                ? 'bg-amber-600 border-amber-300'
+                : 'bg-slate-700 border-slate-400'
+            }`}
+          >
+            {resultAnnouncement.outcome === 'correct' ? (
+              <CheckCircle2 className="w-8 h-8 shrink-0" />
+            ) : resultAnnouncement.outcome === 'incorrect' ? (
+              <XCircle className="w-8 h-8 shrink-0" />
+            ) : (
+              <SkipForward className="w-8 h-8 shrink-0" />
+            )}
+            <span className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-wide text-center">
+              {TEAM_CONFIG[resultAnnouncement.team].label.toUpperCase()} —{' '}
+              {resultAnnouncement.outcome === 'correct'
+                ? 'CORRECT! (+1)'
+                : resultAnnouncement.outcome === 'incorrect'
+                ? 'INCORRECT'
+                : resultAnnouncement.outcome === 'timeout'
+                ? "TIME'S UP"
+                : 'SKIPPED'}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* MAIN SECTION */}
       <main className="flex-1 flex flex-col items-center justify-center py-6 lg:py-8">

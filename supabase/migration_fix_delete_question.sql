@@ -20,3 +20,4 @@ create policy "Admins can delete session questions"
   using (public.is_admin());
 
 notify pgrst, 'reload schema';
+
