@@ -18,6 +18,9 @@ export interface Question {
   question_type: string;
   answer_text: string | null;
   notes: string | null;
+  audio_url: string | null;
+  audio_start_seconds: number | null;
+  audio_duration_seconds: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -37,6 +40,8 @@ export interface GameSession {
   timer_duration: number;
   timer_running: boolean;
   paused_remaining_seconds: number | null;
+  audio_playing: boolean;
+  audio_started_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -67,6 +72,8 @@ export interface PublicQuestion {
   team: Team;
   question_text: string;
   question_type: string;
+  audio_url: string | null;
+  audio_duration_seconds: number | null;
 }
 
 export interface PublicGameState {

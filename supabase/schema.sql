@@ -67,6 +67,9 @@ create table if not exists public.questions (
   question_type text not null default 'oral',
   answer_text text,
   notes text,
+  audio_url text null,
+  audio_start_seconds numeric(8, 2) null,
+  audio_duration_seconds numeric(6, 2) null,
   is_active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -115,6 +118,8 @@ create table if not exists public.game_sessions (
   timer_duration integer not null default 25 check (timer_duration >= 5 and timer_duration <= 300),
   timer_running boolean not null default false,
   paused_remaining_seconds numeric(8, 2) null,
+  audio_playing boolean not null default false,
+  audio_started_at timestamptz null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -289,7 +294,9 @@ begin
       'id', q.id,
       'team', q.team,
       'question_text', q.question_text,
-      'question_type', q.question_type
+      'question_type', q.question_type,
+      'audio_url', q.audio_url,
+      'audio_duration_seconds', q.audio_duration_seconds
     )
     into v_question
     from public.questions q
@@ -492,7 +499,9 @@ begin
     current_question_number = 1,
     timer_running = false,
     current_started_at = null,
-    paused_remaining_seconds = v_session.timer_duration
+    paused_remaining_seconds = v_session.timer_duration,
+    audio_playing = false,
+    audio_started_at = null
   where id = p_session_id;
 
   return jsonb_build_object('started', true, 'session_id', p_session_id);
@@ -688,7 +697,9 @@ begin
       current_question_number = v_session.current_question_number + 1,
       timer_running = false,
       current_started_at = null,
-      paused_remaining_seconds = v_session.timer_duration
+      paused_remaining_seconds = v_session.timer_duration,
+      audio_playing = false,
+      audio_started_at = null
     where id = p_session_id;
 
     return jsonb_build_object(
@@ -705,7 +716,9 @@ begin
       current_session_question_id = null,
       timer_running = false,
       current_started_at = null,
-      paused_remaining_seconds = 0
+      paused_remaining_seconds = 0,
+      audio_playing = false,
+      audio_started_at = null
     where id = p_session_id;
 
     return jsonb_build_object(
@@ -757,7 +770,9 @@ begin
     current_question_number = 0,
     timer_running = false,
     current_started_at = null,
-    paused_remaining_seconds = v_session.timer_duration
+    paused_remaining_seconds = v_session.timer_duration,
+    audio_playing = false,
+    audio_started_at = null
   where id = p_session_id;
 
   return jsonb_build_object('restarted', true);
@@ -784,7 +799,9 @@ begin
     current_session_question_id = null,
     timer_running = false,
     current_started_at = null,
-    paused_remaining_seconds = 0
+    paused_remaining_seconds = 0,
+    audio_playing = false,
+    audio_started_at = null
   where id = p_session_id;
 
   return jsonb_build_object('ended', true);
@@ -792,6 +809,52 @@ end;
 $$;
 
 grant execute on function public.end_game_session(uuid) to authenticated;
+
+create or replace function public.control_audio(p_session_id uuid, p_action text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_session public.game_sessions%rowtype;
+begin
+  if not public.is_operator() then
+    raise exception 'Unauthorized: operator role required';
+  end if;
+
+  if p_action not in ('play', 'stop') then
+    raise exception 'Invalid audio action: %', p_action;
+  end if;
+
+  select * into v_session
+  from public.game_sessions
+  where id = p_session_id
+  for update;
+
+  if not found then
+    raise exception 'Game session not found';
+  end if;
+
+  if v_session.status not in ('playing', 'paused') then
+    raise exception 'Cannot control audio when session is %', v_session.status;
+  end if;
+
+  if p_action = 'play' then
+    update public.game_sessions
+    set audio_playing = true, audio_started_at = now()
+    where id = p_session_id;
+  else
+    update public.game_sessions
+    set audio_playing = false, audio_started_at = null
+    where id = p_session_id;
+  end if;
+
+  return jsonb_build_object('ok', true, 'action', p_action, 'server_time', now());
+end;
+$$;
+
+grant execute on function public.control_audio(uuid, text) to authenticated;
 
 -- -----------------------------------------------------------------------------
 -- 9. REALTIME PUBLICATION
@@ -826,5 +889,36 @@ end $$;
 grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant select on public.game_sessions, public.session_questions, public.team_progress to anon;
+
+-- Storage bucket for 20s trimmed question audio clips
+insert into storage.buckets (id, name, public)
+values ('question-audio', 'question-audio', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "Public read question-audio" on storage.objects;
+create policy "Public read question-audio"
+  on storage.objects for select
+  to anon, authenticated
+  using (bucket_id = 'question-audio');
+
+drop policy if exists "Admins upload question-audio" on storage.objects;
+create policy "Admins upload question-audio"
+  on storage.objects for insert
+  to authenticated
+  with check (bucket_id = 'question-audio' and public.is_admin());
+
+drop policy if exists "Admins update question-audio" on storage.objects;
+create policy "Admins update question-audio"
+  on storage.objects for update
+  to authenticated
+  using (bucket_id = 'question-audio' and public.is_admin())
+  with check (bucket_id = 'question-audio' and public.is_admin());
+
+drop policy if exists "Admins delete question-audio" on storage.objects;
+create policy "Admins delete question-audio"
+  on storage.objects for delete
+  to authenticated
+  using (bucket_id = 'question-audio' and public.is_admin());
+
 notify pgrst, 'reload schema';
 

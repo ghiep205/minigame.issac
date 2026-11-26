@@ -15,9 +15,14 @@ import {
   ChevronRight,
   X,
   FileText,
+  Music,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { parseQuestionsCsv } from '@/lib/csv';
+import {
+  AudioClipEditor,
+  type PendingAudioClip,
+} from '@/components/AudioClipEditor';
 import { TEAM_CONFIG, TEAMS, type Question, type Team } from '@/types/quiz';
 
 const PAGE_SIZE = 15;
@@ -57,6 +62,12 @@ export function QuestionsManager() {
   const [formAnswerText, setFormAnswerText] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [formIsActive, setFormIsActive] = useState(true);
+  const [pendingAudio, setPendingAudio] = useState<PendingAudioClip>({
+    blob: null,
+    startSeconds: null,
+    durationSeconds: null,
+    removed: false,
+  });
   const [saving, setSaving] = useState(false);
 
   const [csvModalOpen, setCsvModalOpen] = useState(false);
@@ -149,6 +160,12 @@ export function QuestionsManager() {
     setFormAnswerText('');
     setFormNotes('');
     setFormIsActive(true);
+    setPendingAudio({
+      blob: null,
+      startSeconds: null,
+      durationSeconds: null,
+      removed: false,
+    });
     setModalOpen(true);
   }
 
@@ -159,6 +176,12 @@ export function QuestionsManager() {
     setFormAnswerText(q.answer_text ?? '');
     setFormNotes(q.notes ?? '');
     setFormIsActive(q.is_active);
+    setPendingAudio({
+      blob: null,
+      startSeconds: q.audio_start_seconds,
+      durationSeconds: q.audio_duration_seconds,
+      removed: false,
+    });
     setModalOpen(true);
   }
 
@@ -173,12 +196,50 @@ export function QuestionsManager() {
     setFeedback(null);
     const supabase = createClient();
 
+    let nextAudioUrl = editingQuestion?.audio_url ?? null;
+    let nextAudioStart = editingQuestion?.audio_start_seconds ?? null;
+    let nextAudioDuration = editingQuestion?.audio_duration_seconds ?? null;
+
+    if (pendingAudio.removed) {
+      nextAudioUrl = null;
+      nextAudioStart = null;
+      nextAudioDuration = null;
+    } else if (pendingAudio.blob) {
+      const filePath = `${formTeam}/${crypto.randomUUID()}.wav`;
+      const { error: uploadError } = await supabase.storage
+        .from('question-audio')
+        .upload(filePath, pendingAudio.blob, {
+          contentType: 'audio/wav',
+          upsert: false,
+        });
+
+      if (uploadError) {
+        setFeedback({
+          type: 'error',
+          message: `Audio upload failed: ${uploadError.message}`,
+        });
+        setSaving(false);
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('question-audio')
+        .getPublicUrl(filePath);
+
+      nextAudioUrl = publicUrlData.publicUrl;
+      nextAudioStart = pendingAudio.startSeconds;
+      nextAudioDuration = pendingAudio.durationSeconds;
+    }
+
     const payload = {
       team: formTeam,
       question_text: formQuestionText.trim(),
-      question_type: 'oral',
+      question_type: nextAudioUrl ? 'audio' : 'oral',
       answer_text: formAnswerText.trim() || null,
       notes: formNotes.trim() || null,
+      audio_url: nextAudioUrl,
+      audio_start_seconds: nextAudioStart,
+      audio_duration_seconds: nextAudioDuration,
       is_active: formIsActive,
     };
 
@@ -515,6 +576,14 @@ export function QuestionsManager() {
                         />
                         {cfg.label}
                       </span>
+                      {q.audio_url && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200 font-semibold">
+                          <Music className="w-3 h-3" />
+                          {q.audio_duration_seconds
+                            ? `${Math.round(q.audio_duration_seconds)}s Audio`
+                            : 'Audio'}
+                        </span>
+                      )}
                       {q.answer_text && (
                         <span>
                           · Answer:{' '}
@@ -588,8 +657,8 @@ export function QuestionsManager() {
 
       {/* Add/Edit Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 p-6 space-y-5 shadow-2xl">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-xl rounded-2xl bg-white border border-slate-200 p-6 space-y-5 shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-lg font-bold text-slate-900">
                 {editingQuestion ? 'Edit Question' : 'Add New Question'}
@@ -657,6 +726,16 @@ export function QuestionsManager() {
                   className="w-full rounded-xl bg-slate-50 border border-slate-200 px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-sky-400"
                 />
               </div>
+
+              <AudioClipEditor
+                key={editingQuestion?.id ?? 'new-question'}
+                existingAudioUrl={editingQuestion?.audio_url ?? null}
+                existingStartSeconds={editingQuestion?.audio_start_seconds ?? null}
+                existingDurationSeconds={
+                  editingQuestion?.audio_duration_seconds ?? null
+                }
+                onChange={setPendingAudio}
+              />
 
               <label className="flex items-center gap-2.5 text-sm text-slate-700 cursor-pointer">
                 <input

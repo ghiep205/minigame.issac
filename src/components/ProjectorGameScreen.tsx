@@ -1,7 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { Maximize2, Minimize2, Radio, Clock, CheckCircle2 } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Maximize2,
+  Minimize2,
+  Radio,
+  Clock,
+  CheckCircle2,
+  Music,
+  Volume2,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useSynchronizedTimer } from '@/hooks/useSynchronizedTimer';
 import {
@@ -22,6 +30,9 @@ export function ProjectorGameScreen({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchGameState = useCallback(async () => {
     try {
@@ -123,6 +134,27 @@ export function ProjectorGameScreen({
     serverOffsetMs
   );
 
+  const currentAudioUrl = gameState?.current_question?.audio_url ?? null;
+  const isAudioPlaying = Boolean(session?.audio_playing && currentAudioUrl);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isAudioPlaying && currentAudioUrl) {
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise
+          .then(() => setAutoplayBlocked(false))
+          .catch(() => setAutoplayBlocked(true));
+      }
+    } else {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }, [isAudioPlaying, currentAudioUrl, session?.audio_started_at]);
+
   const totalQuestions = session ? session.questions_per_team * 3 : 45;
   const progressByTeam = Object.fromEntries(
     (gameState?.team_progress ?? []).map((tp) => [tp.team, tp])
@@ -213,8 +245,29 @@ export function ProjectorGameScreen({
               <Maximize2 className="w-5 h-5" />
             )}
           </button>
+
+          {autoplayBlocked && (
+            <button
+              onClick={() => {
+                if (audioRef.current) {
+                  void audioRef.current.play().then(() => setAutoplayBlocked(false));
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-800 cursor-pointer"
+            >
+              <Volume2 className="w-4 h-4" />
+              Enable Stage Audio
+            </button>
+          )}
         </div>
       </header>
+
+      <audio
+        ref={audioRef}
+        src={currentAudioUrl ?? undefined}
+        preload="auto"
+        className="hidden"
+      />
 
       {/* MAIN SECTION */}
       <main className="flex-1 flex flex-col items-center justify-center py-6 lg:py-8">
@@ -352,11 +405,28 @@ export function ProjectorGameScreen({
 
             {/* Large Question Card */}
             <div
-              className="rounded-3xl bg-white border-2 p-8 lg:p-14 min-h-[250px] lg:min-h-[320px] flex items-center justify-center text-center shadow-[0_6px_30px_rgba(15,23,42,0.06)]"
+              className="rounded-3xl bg-white border-2 p-8 lg:p-14 min-h-[250px] lg:min-h-[320px] flex flex-col items-center justify-center text-center gap-5 shadow-[0_6px_30px_rgba(15,23,42,0.06)]"
               style={{
                 borderColor: activeTeamCfg?.hex ?? '#CBD5E1',
               }}
             >
+              {currentAudioUrl && (
+                <div
+                  className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold border ${
+                    isAudioPlaying
+                      ? 'bg-sky-500 text-white border-sky-500'
+                      : 'bg-[#EBF6FF] text-sky-700 border-sky-200'
+                  }`}
+                >
+                  <Music className="w-4 h-4" />
+                  {isAudioPlaying
+                    ? 'Playing 20s Music Clip...'
+                    : `Music Clip (${Math.round(
+                        gameState?.current_question?.audio_duration_seconds ?? 20
+                      )}s)`}
+                </div>
+              )}
+
               <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">
                 {gameState?.current_question?.question_text ??
                   'Loading question...'}

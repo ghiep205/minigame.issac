@@ -18,6 +18,9 @@ import {
   Loader2,
   CheckCircle2,
   XCircle,
+  Music,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useSynchronizedTimer } from '@/hooks/useSynchronizedTimer';
@@ -238,6 +241,19 @@ export function MCControlPanel({
     await runGuardedAction(`timer_${action}`, async () => {
       const supabase = createClient();
       const { error } = await supabase.rpc('control_timer', {
+        p_session_id: session.id,
+        p_action: action,
+      });
+      if (error) throw new Error(error.message);
+      await loadSessionState(session.id);
+    });
+  }
+
+  async function handleAudioAction(action: 'play' | 'stop') {
+    if (!session) return;
+    await runGuardedAction(`audio_${action}`, async () => {
+      const supabase = createClient();
+      const { error } = await supabase.rpc('control_audio', {
         p_session_id: session.id,
         p_action: action,
       });
@@ -499,6 +515,51 @@ export function MCControlPanel({
                         </p>
                       )}
                     </div>
+
+                    {currentQuestion.audio_url && (
+                      <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <Music className="w-4 h-4 text-sky-600" />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                              Audio Question (
+                              {Math.round(
+                                currentQuestion.audio_duration_seconds ?? 20
+                              )}
+                              s Clip)
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {session.audio_playing ? (
+                              <button
+                                onClick={() => handleAudioAction('stop')}
+                                disabled={busyAction !== null}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] text-xs font-semibold text-white cursor-pointer"
+                              >
+                                <VolumeX className="w-3.5 h-3.5" />
+                                Stop Projector Audio
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleAudioAction('play')}
+                                disabled={busyAction !== null}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-xs font-semibold text-white cursor-pointer"
+                              >
+                                <Volume2 className="w-3.5 h-3.5" />
+                                Play Clip on Projector
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <audio
+                          controls
+                          src={currentQuestion.audio_url}
+                          className="w-full h-9"
+                        />
+                      </div>
+                    )}
 
                     <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-3">
                       {!session.timer_running &&
