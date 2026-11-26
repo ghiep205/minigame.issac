@@ -447,3 +447,4 @@ create policy "Admins delete question-audio"
   using (bucket_id = 'question-audio' and public.is_admin());
 
 notify pgrst, 'reload schema';
+

@@ -113,3 +113,4 @@ export function formatTimeSec(sec: number): string {
   const tenths = Math.floor((clamped % 1) * 10);
   return `${mins}:${secs.toString().padStart(2, '0')}.${tenths}`;
 }
+

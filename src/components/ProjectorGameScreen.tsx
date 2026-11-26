@@ -7,7 +7,8 @@ import {
   Radio,
   Clock,
   CheckCircle2,
-  Music,
+  Play,
+  Square,
   Volume2,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -31,6 +32,7 @@ export function ProjectorGameScreen({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [autoplayBlocked, setAutoplayBlocked] = useState(false);
+  const [localPlaying, setLocalPlaying] = useState(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -135,25 +137,52 @@ export function ProjectorGameScreen({
   );
 
   const currentAudioUrl = gameState?.current_question?.audio_url ?? null;
-  const isAudioPlaying = Boolean(session?.audio_playing && currentAudioUrl);
+  const remoteAudioPlaying = Boolean(session?.audio_playing && currentAudioUrl);
+  const isAudioPlaying = localPlaying || remoteAudioPlaying;
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (isAudioPlaying && currentAudioUrl) {
+    if (remoteAudioPlaying && currentAudioUrl) {
       audio.currentTime = 0;
       const playPromise = audio.play();
       if (playPromise && typeof playPromise.catch === 'function') {
         playPromise
-          .then(() => setAutoplayBlocked(false))
+          .then(() => {
+            setAutoplayBlocked(false);
+            setLocalPlaying(true);
+          })
           .catch(() => setAutoplayBlocked(true));
       }
     } else {
       audio.pause();
       audio.currentTime = 0;
+      setTimeout(() => setLocalPlaying(false), 0);
     }
-  }, [isAudioPlaying, currentAudioUrl, session?.audio_started_at]);
+  }, [remoteAudioPlaying, currentAudioUrl, session?.audio_started_at]);
+
+  function handleToggleStageAudio() {
+    const audio = audioRef.current;
+    if (!audio || !currentAudioUrl) return;
+
+    if (!audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+      setLocalPlaying(false);
+    } else {
+      audio.currentTime = 0;
+      const playPromise = audio.play();
+      if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise
+          .then(() => {
+            setAutoplayBlocked(false);
+            setLocalPlaying(true);
+          })
+          .catch(() => setAutoplayBlocked(true));
+      }
+    }
+  }
 
   const totalQuestions = session ? session.questions_per_team * 3 : 45;
   const progressByTeam = Object.fromEntries(
@@ -266,6 +295,9 @@ export function ProjectorGameScreen({
         ref={audioRef}
         src={currentAudioUrl ?? undefined}
         preload="auto"
+        onPlay={() => setLocalPlaying(true)}
+        onPause={() => setLocalPlaying(false)}
+        onEnded={() => setLocalPlaying(false)}
         className="hidden"
       />
 
@@ -411,20 +443,27 @@ export function ProjectorGameScreen({
               }}
             >
               {currentAudioUrl && (
-                <div
-                  className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold border ${
+                <button
+                  type="button"
+                  onClick={handleToggleStageAudio}
+                  className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-sm lg:text-base font-bold border transition-colors cursor-pointer ${
                     isAudioPlaying
-                      ? 'bg-sky-500 text-white border-sky-500'
-                      : 'bg-[#EBF6FF] text-sky-700 border-sky-200'
+                      ? 'bg-sky-500 hover:bg-sky-600 text-white border-sky-500 shadow-sm'
+                      : 'bg-[#EBF6FF] hover:bg-sky-100 text-sky-700 border-sky-200'
                   }`}
                 >
-                  <Music className="w-4 h-4" />
-                  {isAudioPlaying
-                    ? 'Playing 20s Music Clip...'
-                    : `Music Clip (${Math.round(
-                        gameState?.current_question?.audio_duration_seconds ?? 20
-                      )}s)`}
-                </div>
+                  {isAudioPlaying ? (
+                    <>
+                      <Square className="w-4 h-4 fill-current" />
+                      Playing {Math.round(gameState?.current_question?.audio_duration_seconds ?? 20)}s Clip — Click to Stop
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-4 h-4 fill-current" />
+                      Play {Math.round(gameState?.current_question?.audio_duration_seconds ?? 20)}s Music Clip
+                    </>
+                  )}
+                </button>
               )}
 
               <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 leading-tight tracking-tight">

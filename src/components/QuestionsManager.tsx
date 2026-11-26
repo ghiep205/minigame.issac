@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Plus,
   Search,
@@ -15,7 +15,8 @@ import {
   ChevronRight,
   X,
   FileText,
-  Music,
+  Play,
+  Square,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { parseQuestionsCsv } from '@/lib/csv';
@@ -74,6 +75,26 @@ export function QuestionsManager() {
   const [csvText, setCsvText] = useState('');
   const [csvErrors, setCsvErrors] = useState<string[]>([]);
   const [importing, setImporting] = useState(false);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+  const listAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  function toggleRowAudio(q: Question) {
+    if (!q.audio_url) return;
+    if (playingId === q.id && listAudioRef.current) {
+      listAudioRef.current.pause();
+      listAudioRef.current.currentTime = 0;
+      setPlayingId(null);
+      return;
+    }
+    if (listAudioRef.current) {
+      listAudioRef.current.pause();
+    }
+    const audio = new Audio(q.audio_url);
+    listAudioRef.current = audio;
+    audio.onended = () => setPlayingId(null);
+    setPlayingId(q.id);
+    void audio.play();
+  }
 
   const loadCounts = useCallback(async () => {
     const supabase = createClient();
@@ -577,12 +598,26 @@ export function QuestionsManager() {
                         {cfg.label}
                       </span>
                       {q.audio_url && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 border border-sky-200 font-semibold">
-                          <Music className="w-3 h-3" />
-                          {q.audio_duration_seconds
-                            ? `${Math.round(q.audio_duration_seconds)}s Audio`
-                            : 'Audio'}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => toggleRowAudio(q)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border font-semibold transition-colors cursor-pointer ${
+                            playingId === q.id
+                              ? 'bg-sky-500 text-white border-sky-500'
+                              : 'bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200'
+                          }`}
+                        >
+                          {playingId === q.id ? (
+                            <Square className="w-3 h-3 fill-current" />
+                          ) : (
+                            <Play className="w-3 h-3 fill-current" />
+                          )}
+                          {playingId === q.id
+                            ? 'Stop'
+                            : q.audio_duration_seconds
+                            ? `Play ${Math.round(q.audio_duration_seconds)}s`
+                            : 'Play Audio'}
+                        </button>
                       )}
                       {q.answer_text && (
                         <span>
