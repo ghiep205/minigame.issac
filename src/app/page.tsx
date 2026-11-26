@@ -1,69 +1,102 @@
-import Image from "next/image";
+import Link from 'next/link';
+import { Monitor, Sliders, ShieldCheck, ArrowRight } from 'lucide-react';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <main className="min-h-screen bg-[#0B1120] text-slate-100 flex flex-col items-center justify-center p-6">
+      <div className="max-w-4xl w-full space-y-10">
+        <div className="text-center space-y-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-xs font-medium tracking-wider uppercase text-slate-300">
+            Live Event Quiz System
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight text-white">
+            3-Team Live Quiz Arena
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+            45 oral questions across Team Red, Team Green, and Team Blue with a
+            synchronized 25-second countdown timer.
           </p>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#EF4444]/15 border border-[#EF4444]/40 text-sm font-medium text-[#FCA5A5]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+              Team Red
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#16A34A]/15 border border-[#16A34A]/40 text-sm font-medium text-[#86EFAC]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#16A34A]" />
+              Team Green
+            </span>
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#2563EB]/15 border border-[#2563EB]/40 text-sm font-medium text-[#93C5FD]">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
+              Team Blue
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <Link
+            href="/game"
+            className="group rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-600 p-6 flex flex-col justify-between transition-colors"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-slate-200">
+                <Monitor className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">
+                Projector Display
+              </h2>
+              <p className="text-sm text-slate-400">
+                16:9 live stage screen with large question typography, 25s
+                timer, and real-time team progress.
+              </p>
+            </div>
+            <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-200 group-hover:text-white">
+              Open /game <ArrowRight className="w-4 h-4" />
+            </div>
+          </Link>
+
+          <Link
+            href="/control"
+            className="group rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-600 p-6 flex flex-col justify-between transition-colors"
           >
-            Documentation
-          </a>
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-slate-200">
+                <Sliders className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">
+                MC Control Panel
+              </h2>
+              <p className="text-sm text-slate-400">
+                Run the live game: start/pause timer, mark answers correct or
+                incorrect, and advance turns safely.
+              </p>
+            </div>
+            <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-200 group-hover:text-white">
+              Open /control <ArrowRight className="w-4 h-4" />
+            </div>
+          </Link>
+
+          <Link
+            href="/admin"
+            className="group rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-600 p-6 flex flex-col justify-between transition-colors"
+          >
+            <div className="space-y-3">
+              <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-slate-200">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">
+                Admin Dashboard
+              </h2>
+              <p className="text-sm text-slate-400">
+                Manage the question bank, bulk import CSVs, and configure game
+                sessions.
+              </p>
+            </div>
+            <div className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-slate-200 group-hover:text-white">
+              Open /admin <ArrowRight className="w-4 h-4" />
+            </div>
+          </Link>
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
